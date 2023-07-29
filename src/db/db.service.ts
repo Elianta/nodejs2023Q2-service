@@ -103,16 +103,21 @@ export class DbService {
   }
 
   createTrack({
-    data: { name, duration },
+    data: { name, duration, albumId, artistId },
   }: {
-    data: { name: string; duration: number };
+    data: {
+      name: string;
+      duration: number;
+      albumId?: string;
+      artistId?: string;
+    };
   }): Track {
     const track: Track = {
       id: uuidv4(),
       name,
       duration,
-      albumId: null,
-      artistId: null,
+      albumId: albumId ?? null,
+      artistId: artistId ?? null,
     };
 
     this.tracks.push(track);
