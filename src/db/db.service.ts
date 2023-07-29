@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { User, SafeUser, Track, Artist } from 'src/types';
+import { User, SafeUser, Track, Artist, Album } from 'src/types';
 
 @Injectable()
 export class DbService {
   private users: User[] = [];
   private tracks: Track[] = [];
   private artists: Artist[] = [];
+  private albums: Album[] = [];
 
   private _getSafeUser(user: User): SafeUser {
     const { passwordHash: _, ...safeUser } = user;
@@ -172,6 +173,58 @@ export class DbService {
     const prevLength = this.artists.length;
     this.artists = this.artists.filter((artist) => artist.id !== id);
     const currentLength = this.artists.length;
+
+    return currentLength < prevLength ? id : null;
+  }
+
+  getAllAlbums() {
+    return this.albums;
+  }
+
+  getOneAlbum(id: string): Album | null {
+    const found = this.albums.find((album) => album.id === id);
+
+    if (!found) return null;
+    return found;
+  }
+
+  createAlbum({
+    data: { name, year, artistId },
+  }: {
+    data: { name: string; year: number; artistId?: string | null };
+  }): Album {
+    const album: Album = {
+      id: uuidv4(),
+      name,
+      year,
+      artistId: artistId ?? null,
+    };
+
+    this.albums.push(album);
+
+    return album;
+  }
+
+  updateAlbum({
+    data: { id, albumData },
+  }: {
+    data: { id: string; albumData: Partial<Album> };
+  }) {
+    const found = this.albums.find((album) => album.id === id);
+
+    if (!found) return null;
+
+    for (const key in albumData) {
+      found[key] = albumData[key];
+    }
+
+    return found;
+  }
+
+  deleteOneAlbum(id: string) {
+    const prevLength = this.albums.length;
+    this.albums = this.albums.filter((album) => album.id !== id);
+    const currentLength = this.albums.length;
 
     return currentLength < prevLength ? id : null;
   }
