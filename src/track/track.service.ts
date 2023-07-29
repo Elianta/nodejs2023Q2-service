@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
 import { ERR_MESSAGES } from 'src/constants';
 import { CreateTrackDto, UpdateTrackDto } from './dto';
+import { FavoritesType } from 'src/types';
 
 @Injectable()
 export class TrackService {
@@ -9,6 +10,10 @@ export class TrackService {
 
   findAll() {
     return this.db.getAllTracks();
+  }
+
+  findMany(ids: string[]) {
+    return this.db.getManyTracks(ids);
   }
 
   findOne(id: string) {
@@ -50,5 +55,9 @@ export class TrackService {
     if (deletedId === null) {
       throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
     }
+
+    try {
+      this.db.deleteFromFavorites(FavoritesType.TRACK, id);
+    } catch {}
   }
 }
