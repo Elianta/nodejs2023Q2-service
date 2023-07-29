@@ -57,6 +57,8 @@ export class AlbumService {
       throw new NotFoundException(ERR_MESSAGES.ALBUM_NOT_FOUND);
     }
 
+    this.db.deleteAlbumIdFromTracks(id);
+
     try {
       this.db.deleteFromFavorites(FavoritesType.ALBUM, id);
     } catch {}

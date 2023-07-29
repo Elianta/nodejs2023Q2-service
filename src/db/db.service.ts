@@ -260,6 +260,14 @@ export class DbService {
     return currentLength < prevLength ? id : null;
   }
 
+  deleteAlbumIdFromTracks(id: string) {
+    this.tracks.forEach((track) => {
+      if (track.albumId === id) {
+        track.albumId = null;
+      }
+    });
+  }
+
   getAllFavorites() {
     return this.favorites;
   }
