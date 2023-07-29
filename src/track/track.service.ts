@@ -30,6 +30,8 @@ export class TrackService {
       data: {
         name: dto.name,
         duration: dto.duration,
+        albumId: dto.albumId,
+        artistId: dto.artistId,
       },
     });
 
