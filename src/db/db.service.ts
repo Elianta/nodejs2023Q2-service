@@ -204,6 +204,14 @@ export class DbService {
     return currentLength < prevLength ? id : null;
   }
 
+  deleteArtistIdFromTracks(id: string) {
+    this.tracks.forEach((track) => {
+      if (track.artistId === id) {
+        track.artistId = null;
+      }
+    });
+  }
+
   getAllAlbums() {
     return this.albums;
   }
