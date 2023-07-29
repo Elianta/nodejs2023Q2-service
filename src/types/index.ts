@@ -16,3 +16,9 @@ export interface Track {
   albumId: string | null;
   duration: number;
 }
+
+export interface Artist {
+  id: string;
+  name: string;
+  grammy: boolean;
+}
