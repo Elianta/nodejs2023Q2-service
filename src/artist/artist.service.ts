@@ -56,6 +56,8 @@ export class ArtistService {
       throw new NotFoundException(ERR_MESSAGES.ARTIST_NOT_FOUND);
     }
 
+    this.db.deleteArtistIdFromTracks(id);
+
     try {
       this.db.deleteFromFavorites(FavoritesType.ARTIST, id);
     } catch {}
