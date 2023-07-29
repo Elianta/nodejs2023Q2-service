@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
 import { ERR_MESSAGES } from 'src/constants';
 import { CreateAlbumDto, UpdateAlbumDto } from './dto';
+import { FavoritesType } from 'src/types';
 
 @Injectable()
 export class AlbumService {
@@ -9,6 +10,10 @@ export class AlbumService {
 
   findAll() {
     return this.db.getAllAlbums();
+  }
+
+  findMany(ids: string[]) {
+    return this.db.getManyAlbums(ids);
   }
 
   findOne(id: string) {
@@ -51,5 +56,9 @@ export class AlbumService {
     if (deletedId === null) {
       throw new NotFoundException(ERR_MESSAGES.ALBUM_NOT_FOUND);
     }
+
+    try {
+      this.db.deleteFromFavorites(FavoritesType.ALBUM, id);
+    } catch {}
   }
 }
