@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { User, SafeUser } from 'src/types';
+import { User, SafeUser, Track } from 'src/types';
 
 @Injectable()
 export class DbService {
   private users: User[] = [];
+  private tracks: Track[] = [];
 
   private _getSafeUser(user: User): SafeUser {
     const { passwordHash: _, ...safeUser } = user;
@@ -68,5 +69,58 @@ export class DbService {
     found.updatedAt = Date.now();
 
     return this._getSafeUser(found);
+  }
+
+  getAllTracks() {
+    return this.tracks;
+  }
+
+  getOneTrack(id: string): Track | null {
+    const found = this.tracks.find((track) => track.id === id);
+
+    if (!found) return null;
+    return found;
+  }
+
+  createTrack({
+    data: { name, duration },
+  }: {
+    data: { name: string; duration: number };
+  }): Track {
+    const track: Track = {
+      id: uuidv4(),
+      name,
+      duration,
+      albumId: null,
+      artistId: null,
+    };
+
+    this.tracks.push(track);
+
+    return track;
+  }
+
+  updateTrack({
+    data: { id, trackData },
+  }: {
+    data: { id: string; trackData: Partial<Track> };
+  }) {
+    const found = this.tracks.find((track) => track.id === id);
+
+    if (!found) return null;
+
+    for (const key in trackData) {
+      found[key] = trackData[key];
+    }
+
+    return found;
+  }
+
+  deleteOneTrack(id: string) {
+    const prevLength = this.tracks.length;
+    this.tracks = this.tracks.filter((track) => track.id !== id);
+    const currentLength = this.tracks.length;
+
+    return currentLength < prevLength ? id : null;
   }
 }
