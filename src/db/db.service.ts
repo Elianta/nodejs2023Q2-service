@@ -212,6 +212,14 @@ export class DbService {
     });
   }
 
+  deleteArtistIdFromAlbums(id: string) {
+    this.albums.forEach((album) => {
+      if (album.artistId === id) {
+        album.artistId = null;
+      }
+    });
+  }
+
   getAllAlbums() {
     return this.albums;
   }

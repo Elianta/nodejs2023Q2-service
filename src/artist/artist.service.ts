@@ -57,6 +57,7 @@ export class ArtistService {
     }
 
     this.db.deleteArtistIdFromTracks(id);
+    this.db.deleteArtistIdFromAlbums(id);
 
     try {
       this.db.deleteFromFavorites(FavoritesType.ARTIST, id);
