@@ -9,6 +9,8 @@ import { CreateUserDto, UpdatePasswordDto } from './dto';
 import { User } from 'src/types';
 import { ERR_MESSAGES } from 'src/constants';
 
+const CRYPT_SALT = parseInt(process.env.CRYPT_SALT ?? '10', 10);
+
 @Injectable()
 export class UserService {
   constructor(private db: DbService) {}
@@ -27,8 +29,7 @@ export class UserService {
   }
 
   async create(dto: CreateUserDto) {
-    //TODO: use .env CRYPT_SALT
-    const hash = await bcrypt.hash(dto.password, 10);
+    const hash = await bcrypt.hash(dto.password, CRYPT_SALT);
 
     const user = this.db.createUser({
       data: {
@@ -51,7 +52,7 @@ export class UserService {
     if (!pwMatches)
       throw new ForbiddenException(ERR_MESSAGES.OLD_PASSWORD_WRONG);
 
-    const newHash = await bcrypt.hash(dto.newPassword, 10);
+    const newHash = await bcrypt.hash(dto.newPassword, CRYPT_SALT);
     const updatedUser = this.db.updateUser({
       data: {
         id,
