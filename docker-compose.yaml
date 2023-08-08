@@ -8,6 +8,7 @@ services:
     environment:
       - PORT=${PORT}
       - CRYPT_SALT=${CRYPT_SALT}
+      - DATABASE_URL=${DATABASE_URL}
     ports:
       - ${PORT}:${PORT}
     depends_on:
