@@ -4,45 +4,54 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { DbService } from 'src/db/db.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto, UpdatePasswordDto } from './dto';
-import { User } from 'src/types';
 import { ERR_MESSAGES } from 'src/constants';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { UserEntity } from './entity/user.entity';
+import { plainToInstance } from 'class-transformer';
 
 const CRYPT_SALT = parseInt(process.env.CRYPT_SALT ?? '10', 10);
 
 @Injectable()
 export class UserService {
-  constructor(private db: DbService) {}
+  constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return this.db.getAllUsers();
+  async findAll() {
+    return plainToInstance(UserEntity, await this.prisma.user.findMany());
   }
 
-  findOne(id: string) {
-    const user = this.db.getOneUser(id);
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
     if (user === null) {
       throw new NotFoundException(ERR_MESSAGES.USER_NOT_FOUND);
     }
 
-    return user;
+    return plainToInstance(UserEntity, user);
   }
 
   async create(dto: CreateUserDto) {
     const hash = await bcrypt.hash(dto.password, CRYPT_SALT);
 
-    const user = this.db.createUser({
+    const user = await this.prisma.user.create({
       data: {
         login: dto.login,
-        hash,
+        passwordHash: hash,
       },
     });
 
-    return user;
+    return plainToInstance(UserEntity, user);
   }
 
   async updatePassword(id: string, dto: UpdatePasswordDto) {
-    const user = this.db.getOneUser(id, false) as User | null;
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+
     if (user === null) {
       throw new NotFoundException(ERR_MESSAGES.USER_NOT_FOUND);
     }
@@ -53,21 +62,29 @@ export class UserService {
       throw new ForbiddenException(ERR_MESSAGES.OLD_PASSWORD_WRONG);
 
     const newHash = await bcrypt.hash(dto.newPassword, CRYPT_SALT);
-    const updatedUser = this.db.updateUser({
-      data: {
+
+    const updatedUser = await this.prisma.user.update({
+      where: {
         id,
-        userData: {
-          passwordHash: newHash,
-        },
+      },
+      data: {
+        passwordHash: newHash,
+        version: user.version + 1,
       },
     });
-    return updatedUser as User;
+    return plainToInstance(UserEntity, updatedUser);
   }
 
-  deleteOne(id: string) {
-    const deletedId = this.db.deleteOneUser(id);
-    if (deletedId === null) {
-      throw new NotFoundException(ERR_MESSAGES.USER_NOT_FOUND);
+  async deleteOne(id: string) {
+    try {
+      await this.prisma.user.delete({ where: { id } });
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(ERR_MESSAGES.USER_NOT_FOUND);
+        }
+      }
+      throw error;
     }
   }
 }
