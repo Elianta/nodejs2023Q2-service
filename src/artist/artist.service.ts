@@ -71,8 +71,6 @@ export class ArtistService {
     }
 
     //TODO:
-    // this.db.deleteArtistIdFromAlbums(id);
-
     // try {
     //   this.db.deleteFromFavorites(FavoritesType.ARTIST, id);
     // } catch {}

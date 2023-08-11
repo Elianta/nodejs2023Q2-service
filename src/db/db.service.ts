@@ -1,97 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
-import { Track, Album, Favorites, FavoritesType } from 'src/types';
+import { Favorites, FavoritesType } from 'src/types';
 import { ERR_MESSAGES } from 'src/constants';
 
 @Injectable()
 export class DbService {
-  private tracks: Track[] = [];
-  private albums: Album[] = [];
   private favorites: Favorites = {
     albums: [],
     artists: [],
     tracks: [],
   };
-
-  deleteArtistIdFromTracks(id: string) {
-    this.tracks.forEach((track) => {
-      if (track.artistId === id) {
-        track.artistId = null;
-      }
-    });
-  }
-
-  deleteArtistIdFromAlbums(id: string) {
-    this.albums.forEach((album) => {
-      if (album.artistId === id) {
-        album.artistId = null;
-      }
-    });
-  }
-
-  getAllAlbums() {
-    return this.albums;
-  }
-
-  getManyAlbums(ids: string[]) {
-    return this.albums.filter((album) => ids.includes(album.id));
-  }
-
-  getOneAlbum(id: string): Album | null {
-    const found = this.albums.find((album) => album.id === id);
-
-    if (!found) return null;
-    return found;
-  }
-
-  createAlbum({
-    data: { name, year, artistId },
-  }: {
-    data: { name: string; year: number; artistId?: string | null };
-  }): Album {
-    const album: Album = {
-      id: uuidv4(),
-      name,
-      year,
-      artistId: artistId ?? null,
-    };
-
-    this.albums.push(album);
-
-    return album;
-  }
-
-  updateAlbum({
-    data: { id, albumData },
-  }: {
-    data: { id: string; albumData: Partial<Album> };
-  }) {
-    const found = this.albums.find((album) => album.id === id);
-
-    if (!found) return null;
-
-    for (const key in albumData) {
-      found[key] = albumData[key];
-    }
-
-    return found;
-  }
-
-  deleteOneAlbum(id: string) {
-    const prevLength = this.albums.length;
-    this.albums = this.albums.filter((album) => album.id !== id);
-    const currentLength = this.albums.length;
-
-    return currentLength < prevLength ? id : null;
-  }
-
-  deleteAlbumIdFromTracks(id: string) {
-    this.tracks.forEach((track) => {
-      if (track.albumId === id) {
-        track.albumId = null;
-      }
-    });
-  }
 
   getAllFavorites() {
     return this.favorites;
