@@ -19,13 +19,13 @@ export class FavoritesService {
     private artistService: ArtistService,
   ) {}
 
-  findAll(): FavoritesResponse {
+  async findAll(): Promise<FavoritesResponse> {
     const favorites = this.db.getAllFavorites();
     const trackIds = favorites.tracks;
     const albumIds = favorites.albums;
     const artistIds = favorites.artists;
 
-    const tracks = this.trackService.findMany(trackIds);
+    const tracks = await this.trackService.findMany(trackIds);
     const albums = this.albumService.findMany(albumIds);
     const artists = this.artistService.findMany(artistIds);
 

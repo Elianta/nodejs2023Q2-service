@@ -17,7 +17,7 @@ export class FavoritesController {
   constructor(private favoritesService: FavoritesService) {}
 
   @Get()
-  findAll(): FavoritesResponse {
+  findAll(): Promise<FavoritesResponse> {
     return this.favoritesService.findAll();
   }
 
