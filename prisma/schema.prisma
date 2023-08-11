@@ -29,6 +29,8 @@ model Track {
   albumId String?
   album   Album?  @relation(fields: [albumId], references: [id], onDelete: SetNull)
 
+  inFavorites Boolean @default(false)
+
   @@map("tracks")
 }
 
@@ -39,6 +41,8 @@ model Artist {
 
   tracks Track[]
   albums Album[]
+
+  inFavorites Boolean @default(false)
 
   @@map("artists")
 }
@@ -52,6 +56,8 @@ model Album {
   artist   Artist? @relation(fields: [artistId], references: [id], onDelete: SetNull)
 
   tracks Track[]
+
+  inFavorites Boolean @default(false)
 
   @@map("albums")
 }

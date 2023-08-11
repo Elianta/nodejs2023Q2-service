@@ -3,19 +3,15 @@ import { ERR_MESSAGES } from 'src/constants';
 import { CreateTrackDto, UpdateTrackDto } from './dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { TrackEntity } from './entity/track.entity';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class TrackService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
-    return await this.prisma.track.findMany();
-  }
-
-  async findMany(ids: string[]) {
-    return await this.prisma.track.findMany({
-      where: { id: { in: ids } },
-    });
+    return plainToInstance(TrackEntity, await this.prisma.track.findMany());
   }
 
   async findOne(id: string) {
@@ -26,7 +22,7 @@ export class TrackService {
       throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
     }
 
-    return track;
+    return plainToInstance(TrackEntity, track);
   }
 
   async create(dto: CreateTrackDto) {
@@ -39,7 +35,7 @@ export class TrackService {
       },
     });
 
-    return track;
+    return plainToInstance(TrackEntity, track);
   }
 
   async update(id: string, dto: UpdateTrackDto) {
@@ -48,7 +44,7 @@ export class TrackService {
         where: { id },
         data: dto,
       });
-      return updatedTrack;
+      return plainToInstance(TrackEntity, updatedTrack);
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
@@ -71,10 +67,5 @@ export class TrackService {
       }
       throw error;
     }
-
-    // try {
-    //   // TODO: rewrite
-    //   this.db.deleteFromFavorites(FavoritesType.TRACK, id);
-    // } catch {}
   }
 }

@@ -3,19 +3,15 @@ import { ERR_MESSAGES } from 'src/constants';
 import { CreateAlbumDto, UpdateAlbumDto } from './dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { AlbumEntity } from './entity/album.entity';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class AlbumService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
-    return await this.prisma.album.findMany();
-  }
-
-  async findMany(ids: string[]) {
-    return await this.prisma.album.findMany({
-      where: { id: { in: ids } },
-    });
+    return plainToInstance(AlbumEntity, await this.prisma.album.findMany());
   }
 
   async findOne(id: string) {
@@ -26,7 +22,7 @@ export class AlbumService {
       throw new NotFoundException(ERR_MESSAGES.ALBUM_NOT_FOUND);
     }
 
-    return album;
+    return plainToInstance(AlbumEntity, album);
   }
 
   async create(dto: CreateAlbumDto) {
@@ -38,7 +34,7 @@ export class AlbumService {
       },
     });
 
-    return album;
+    return plainToInstance(AlbumEntity, album);
   }
 
   async update(id: string, dto: UpdateAlbumDto) {
@@ -47,7 +43,7 @@ export class AlbumService {
         where: { id },
         data: dto,
       });
-      return updatedAlbum;
+      return plainToInstance(AlbumEntity, updatedAlbum);
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
@@ -72,10 +68,5 @@ export class AlbumService {
       }
       throw error;
     }
-
-    //TODO:
-    // try {
-    //   this.db.deleteFromFavorites(FavoritesType.ALBUM, id);
-    // } catch {}
   }
 }
