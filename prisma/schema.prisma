@@ -17,3 +17,14 @@ model User {
 
   @@map("users")
 }
+
+model Track {
+  id       String @id @default(uuid())
+  name     String
+  duration Int
+
+  artistId String?
+  albumId  String?
+
+  @@map("tracks")
+}

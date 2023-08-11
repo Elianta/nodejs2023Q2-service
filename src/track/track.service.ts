@@ -1,23 +1,27 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DbService } from 'src/db/db.service';
 import { ERR_MESSAGES } from 'src/constants';
 import { CreateTrackDto, UpdateTrackDto } from './dto';
-import { FavoritesType } from 'src/types';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class TrackService {
-  constructor(private db: DbService) {}
+  constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return this.db.getAllTracks();
+  async findAll() {
+    return await this.prisma.track.findMany();
   }
 
-  findMany(ids: string[]) {
-    return this.db.getManyTracks(ids);
+  async findMany(ids: string[]) {
+    return await this.prisma.track.findMany({
+      where: { id: { in: ids } },
+    });
   }
 
-  findOne(id: string) {
-    const track = this.db.getOneTrack(id);
+  async findOne(id: string) {
+    const track = await this.prisma.track.findUnique({
+      where: { id },
+    });
     if (track === null) {
       throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
     }
@@ -25,8 +29,8 @@ export class TrackService {
     return track;
   }
 
-  create(dto: CreateTrackDto) {
-    const track = this.db.createTrack({
+  async create(dto: CreateTrackDto) {
+    const track = await this.prisma.track.create({
       data: {
         name: dto.name,
         duration: dto.duration,
@@ -38,28 +42,39 @@ export class TrackService {
     return track;
   }
 
-  update(id: string, dto: UpdateTrackDto) {
-    const updatedTrack = this.db.updateTrack({
-      data: {
-        id,
-        trackData: dto,
-      },
-    });
-    if (updatedTrack === null) {
-      throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
+  async update(id: string, dto: UpdateTrackDto) {
+    try {
+      const updatedTrack = await this.prisma.track.update({
+        where: { id },
+        data: dto,
+      });
+      return updatedTrack;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
+        }
+      }
+      throw error;
     }
-
-    return updatedTrack;
   }
 
-  deleteOne(id: string) {
-    const deletedId = this.db.deleteOneTrack(id);
-    if (deletedId === null) {
-      throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
+  async deleteOne(id: string) {
+    try {
+      const deletedTrack = await this.prisma.track.delete({ where: { id } });
+      return deletedTrack.id;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
+        }
+      }
+      throw error;
     }
 
-    try {
-      this.db.deleteFromFavorites(FavoritesType.TRACK, id);
-    } catch {}
+    // try {
+    //   // TODO: rewrite
+    //   this.db.deleteFromFavorites(FavoritesType.TRACK, id);
+    // } catch {}
   }
 }

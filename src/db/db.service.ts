@@ -14,68 +14,6 @@ export class DbService {
     tracks: [],
   };
 
-  getAllTracks() {
-    return this.tracks;
-  }
-
-  getManyTracks(ids: string[]) {
-    return this.tracks.filter((track) => ids.includes(track.id));
-  }
-
-  getOneTrack(id: string): Track | null {
-    const found = this.tracks.find((track) => track.id === id);
-
-    if (!found) return null;
-    return found;
-  }
-
-  createTrack({
-    data: { name, duration, albumId, artistId },
-  }: {
-    data: {
-      name: string;
-      duration: number;
-      albumId?: string;
-      artistId?: string;
-    };
-  }): Track {
-    const track: Track = {
-      id: uuidv4(),
-      name,
-      duration,
-      albumId: albumId ?? null,
-      artistId: artistId ?? null,
-    };
-
-    this.tracks.push(track);
-
-    return track;
-  }
-
-  updateTrack({
-    data: { id, trackData },
-  }: {
-    data: { id: string; trackData: Partial<Track> };
-  }) {
-    const found = this.tracks.find((track) => track.id === id);
-
-    if (!found) return null;
-
-    for (const key in trackData) {
-      found[key] = trackData[key];
-    }
-
-    return found;
-  }
-
-  deleteOneTrack(id: string) {
-    const prevLength = this.tracks.length;
-    this.tracks = this.tracks.filter((track) => track.id !== id);
-    const currentLength = this.tracks.length;
-
-    return currentLength < prevLength ? id : null;
-  }
-
   getAllArtists() {
     return this.artists;
   }
