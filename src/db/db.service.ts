@@ -1,73 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { Track, Artist, Album, Favorites, FavoritesType } from 'src/types';
+import { Track, Album, Favorites, FavoritesType } from 'src/types';
 import { ERR_MESSAGES } from 'src/constants';
 
 @Injectable()
 export class DbService {
   private tracks: Track[] = [];
-  private artists: Artist[] = [];
   private albums: Album[] = [];
   private favorites: Favorites = {
     albums: [],
     artists: [],
     tracks: [],
   };
-
-  getAllArtists() {
-    return this.artists;
-  }
-
-  getManyArtists(ids: string[]) {
-    return this.artists.filter((artist) => ids.includes(artist.id));
-  }
-
-  getOneArtist(id: string): Artist | null {
-    const found = this.artists.find((artist) => artist.id === id);
-
-    if (!found) return null;
-    return found;
-  }
-
-  createArtist({
-    data: { name, grammy },
-  }: {
-    data: { name: string; grammy: boolean };
-  }): Artist {
-    const artist: Artist = {
-      id: uuidv4(),
-      name,
-      grammy,
-    };
-
-    this.artists.push(artist);
-
-    return artist;
-  }
-
-  updateArtist({
-    data: { id, artistData },
-  }: {
-    data: { id: string; artistData: Partial<Artist> };
-  }) {
-    const found = this.artists.find((artist) => artist.id === id);
-
-    if (!found) return null;
-
-    for (const key in artistData) {
-      found[key] = artistData[key];
-    }
-
-    return found;
-  }
-
-  deleteOneArtist(id: string) {
-    const prevLength = this.artists.length;
-    this.artists = this.artists.filter((artist) => artist.id !== id);
-    const currentLength = this.artists.length;
-
-    return currentLength < prevLength ? id : null;
-  }
 
   deleteArtistIdFromTracks(id: string) {
     this.tracks.forEach((track) => {

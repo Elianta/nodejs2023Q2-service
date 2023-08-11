@@ -27,7 +27,7 @@ export class FavoritesService {
 
     const tracks = await this.trackService.findMany(trackIds);
     const albums = this.albumService.findMany(albumIds);
-    const artists = this.artistService.findMany(artistIds);
+    const artists = await this.artistService.findMany(artistIds);
 
     return {
       tracks,
