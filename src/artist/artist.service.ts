@@ -3,19 +3,15 @@ import { ERR_MESSAGES } from 'src/constants';
 import { CreateArtistDto, UpdateArtistDto } from './dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { ArtistEntity } from './entity/artist.entity';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ArtistService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
-    return await this.prisma.artist.findMany();
-  }
-
-  async findMany(ids: string[]) {
-    return await this.prisma.artist.findMany({
-      where: { id: { in: ids } },
-    });
+    return plainToInstance(ArtistEntity, await this.prisma.artist.findMany());
   }
 
   async findOne(id: string) {
@@ -26,7 +22,7 @@ export class ArtistService {
       throw new NotFoundException(ERR_MESSAGES.ARTIST_NOT_FOUND);
     }
 
-    return artist;
+    return plainToInstance(ArtistEntity, artist);
   }
 
   async create(dto: CreateArtistDto) {
@@ -37,7 +33,7 @@ export class ArtistService {
       },
     });
 
-    return artist;
+    return plainToInstance(ArtistEntity, artist);
   }
 
   async update(id: string, dto: UpdateArtistDto) {
@@ -46,7 +42,7 @@ export class ArtistService {
         where: { id },
         data: dto,
       });
-      return updatedArtist;
+      return plainToInstance(ArtistEntity, updatedArtist);
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
@@ -69,10 +65,5 @@ export class ArtistService {
       }
       throw error;
     }
-
-    //TODO:
-    // try {
-    //   this.db.deleteFromFavorites(FavoritesType.ARTIST, id);
-    // } catch {}
   }
 }
