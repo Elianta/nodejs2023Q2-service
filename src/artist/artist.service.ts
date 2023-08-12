@@ -2,9 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ERR_MESSAGES } from 'src/constants';
 import { CreateArtistDto, UpdateArtistDto } from './dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { ArtistEntity } from './entity/artist.entity';
 import { plainToInstance } from 'class-transformer';
+import { handleNotFoundError } from 'src/utils';
 
 @Injectable()
 export class ArtistService {
@@ -44,11 +44,7 @@ export class ArtistService {
       });
       return plainToInstance(ArtistEntity, updatedArtist);
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.ARTIST_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.ARTIST_NOT_FOUND);
       throw error;
     }
   }
@@ -58,11 +54,7 @@ export class ArtistService {
       const deletedArtist = await this.prisma.artist.delete({ where: { id } });
       return deletedArtist.id;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.ARTIST_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.ARTIST_NOT_FOUND);
       throw error;
     }
   }

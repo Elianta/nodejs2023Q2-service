@@ -2,9 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ERR_MESSAGES } from 'src/constants';
 import { CreateTrackDto, UpdateTrackDto } from './dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { TrackEntity } from './entity/track.entity';
 import { plainToInstance } from 'class-transformer';
+import { handleNotFoundError } from 'src/utils';
 
 @Injectable()
 export class TrackService {
@@ -46,11 +46,7 @@ export class TrackService {
       });
       return plainToInstance(TrackEntity, updatedTrack);
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.TRACK_NOT_FOUND);
       throw error;
     }
   }
@@ -60,11 +56,7 @@ export class TrackService {
       const deletedTrack = await this.prisma.track.delete({ where: { id } });
       return deletedTrack.id;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.TRACK_NOT_FOUND);
       throw error;
     }
   }

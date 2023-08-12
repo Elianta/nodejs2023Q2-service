@@ -7,9 +7,9 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto, UpdatePasswordDto } from './dto';
 import { ERR_MESSAGES } from 'src/constants';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { UserEntity } from './entity/user.entity';
 import { plainToInstance } from 'class-transformer';
+import { handleNotFoundError } from 'src/utils';
 
 const CRYPT_SALT = parseInt(process.env.CRYPT_SALT ?? '10', 10);
 
@@ -79,11 +79,7 @@ export class UserService {
     try {
       await this.prisma.user.delete({ where: { id } });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.USER_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.USER_NOT_FOUND);
       throw error;
     }
   }

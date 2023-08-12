@@ -2,9 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ERR_MESSAGES } from 'src/constants';
 import { CreateAlbumDto, UpdateAlbumDto } from './dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { AlbumEntity } from './entity/album.entity';
 import { plainToInstance } from 'class-transformer';
+import { handleNotFoundError } from 'src/utils';
 
 @Injectable()
 export class AlbumService {
@@ -45,11 +45,7 @@ export class AlbumService {
       });
       return plainToInstance(AlbumEntity, updatedAlbum);
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.ALBUM_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.ALBUM_NOT_FOUND);
       throw error;
     }
   }
@@ -61,11 +57,7 @@ export class AlbumService {
       });
       return deletedAlbum.id;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.ALBUM_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.ALBUM_NOT_FOUND);
       throw error;
     }
   }
