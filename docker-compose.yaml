@@ -5,6 +5,7 @@ services:
       context: .
       target: dev
       dockerfile: ./build/app/Dockerfile
+    restart: always
     environment:
       - PORT=${PORT}
       - CRYPT_SALT=${CRYPT_SALT}
