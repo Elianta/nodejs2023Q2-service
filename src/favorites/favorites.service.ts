@@ -1,15 +1,11 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { ERR_MESSAGES } from 'src/constants';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TrackEntity } from 'src/track/entity/track.entity';
 import { AlbumEntity } from 'src/album/entity/album.entity';
 import { ArtistEntity } from 'src/artist/entity/artist.entity';
 import { plainToInstance } from 'class-transformer';
+import { handleNotFoundError } from 'src/utils';
 
 @Injectable()
 export class FavoritesService {
@@ -40,11 +36,11 @@ export class FavoritesService {
         data: { inFavorites: true },
       });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new UnprocessableEntityException(ERR_MESSAGES.TRACK_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(
+        error,
+        ERR_MESSAGES.TRACK_NOT_FOUND,
+        UnprocessableEntityException,
+      );
       throw error;
     }
   }
@@ -56,11 +52,7 @@ export class FavoritesService {
         data: { inFavorites: false },
       });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.TRACK_NOT_FOUND);
       throw error;
     }
   }
@@ -72,11 +64,11 @@ export class FavoritesService {
         data: { inFavorites: true },
       });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new UnprocessableEntityException(ERR_MESSAGES.ALBUM_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(
+        error,
+        ERR_MESSAGES.ALBUM_NOT_FOUND,
+        UnprocessableEntityException,
+      );
       throw error;
     }
   }
@@ -88,11 +80,7 @@ export class FavoritesService {
         data: { inFavorites: false },
       });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.ALBUM_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.ALBUM_NOT_FOUND);
       throw error;
     }
   }
@@ -104,11 +92,11 @@ export class FavoritesService {
         data: { inFavorites: true },
       });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new UnprocessableEntityException(ERR_MESSAGES.ARTIST_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(
+        error,
+        ERR_MESSAGES.ARTIST_NOT_FOUND,
+        UnprocessableEntityException,
+      );
       throw error;
     }
   }
@@ -120,11 +108,7 @@ export class FavoritesService {
         data: { inFavorites: false },
       });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2025') {
-          throw new NotFoundException(ERR_MESSAGES.ARTIST_NOT_FOUND);
-        }
-      }
+      handleNotFoundError(error, ERR_MESSAGES.ARTIST_NOT_FOUND);
       throw error;
     }
   }
