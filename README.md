@@ -1,38 +1,56 @@
 # Home Library Service
 
-- [Task description](https://github.com/AlreadyBored/nodejs-assignments/blob/main/assignments/rest-service/assignment.md)
-- [Scoring](https://github.com/AlreadyBored/nodejs-assignments/blob/main/assignments/rest-service/score.md)
-
 ## :seedling: Prerequisites
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).
 - Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
+- Docker - [Download & Install Docker](https://www.docker.com/products/docker-desktop/).
 
 ## :hammer: Installation:
 
     git clone git@github.com:Elianta/nodejs2023Q2-service.git
-    git checkout develop-part-1
+    git checkout develop-part-2
     npm install
 
 ## :globe_with_meridians: Enviroment variables (.env):
 
     PORT=4000 // setup port on which application is running
     CRYPT_SALT=10 // setup saltRounds for bcrypt hash generation*
+    <!-- postgress setup -->
+    POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=postgres
+    POSTGRES_DB=db
+    POSTGRES_PORT=5432
+    DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public" // db connection url for prisma
 
 \*[bcrypt hash generation](https://github.com/kelektiv/node.bcrypt.js#usage)
 
 ## :runner: Run in development mode:
 
-    npm run start:dev
+    <!-- runs db container and app container (dev mode) -->
+    docker-compose up
 
 ## :running: Run in production mode:
 
+    docker-compose up db
     npm run start
+
+## :cd: Build Docker image
+
+    npm run docker:build -- -t rest-service:1.0.0
+
+## :telescope: Scan created Docker image for vulnerabilities:
+
+    npm run docker:scout
 
 ## :open_hands: Usage:
 
 After starting the app on port (4000 as default) you can open
 in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
+
+#### To explore and manipulate your db data:
+
+    npx prisma studio
 
 ## :coffee: Testing:
 
