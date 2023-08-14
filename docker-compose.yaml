@@ -33,9 +33,11 @@ services:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
       - db-data:/var/lib/postgresql/data
+      - db-logs:/var/log/postgresql
     networks:
       - app-backend
 volumes:
   db-data:
+  db-logs:
 networks:
   app-backend:
