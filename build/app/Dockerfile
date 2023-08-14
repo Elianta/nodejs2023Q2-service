@@ -1,7 +1,7 @@
 #
 # 🧑‍💻 Development
 #
-FROM node:18-alpine as dev
+FROM node:18.17.1-alpine as dev
 
 RUN mkdir -p /app
 
@@ -18,25 +18,27 @@ COPY . .
 #
 # 🏡 Production Build
 #
-FROM node:18-alpine as build
-
-ENV NODE_ENV production
+FROM node:18.17.1-alpine as build
 
 WORKDIR /app
 
 COPY ["package.json", "package-lock.json", "./"]
 
-RUN npm ci && npm cache clean --force
+COPY --from=dev /app/node_modules ./node_modules
 
 COPY . .
 
 RUN npm run build
 
+ENV NODE_ENV production
+
+RUN npm ci && npm cache clean --force
+
 #
 # 🚀 Production Server
 #
 
-FROM node:18-alpine as prod
+FROM node:18.17.1-alpine as prod
 
 ENV NODE_ENV production
 
