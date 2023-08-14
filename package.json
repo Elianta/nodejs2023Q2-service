@@ -19,6 +19,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "docker:scout": "docker scout quickview",
     "docker:build": "docker build . -f ./build/app/Dockerfile"
   },
   "dependencies": {
