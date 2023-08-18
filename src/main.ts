@@ -28,6 +28,14 @@ async function bootstrap() {
     logger.error(`Uncaught Exception: ${err.message} ${err.stack}`);
   });
 
+  process.on('unhandledRejection', (error) => {
+    if (error instanceof Error) {
+      logger.error(`UnhandledRejection: ${error.message}, ${error.stack}`);
+    } else {
+      logger.error(`UnhandledRejection: ${error}`);
+    }
+  });
+
   const document = yaml.load(
     (await readFile(join(process.cwd(), 'doc/api.yaml'))).toString('utf-8'),
   ) as OpenAPIObject;
