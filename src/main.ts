@@ -6,11 +6,18 @@ import { SwaggerModule, OpenAPIObject } from '@nestjs/swagger';
 import * as yaml from 'js-yaml';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { LoggerService } from './logger/logger.service';
 
 const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
+
+  const logger = new LoggerService();
+  app.useLogger(logger);
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
