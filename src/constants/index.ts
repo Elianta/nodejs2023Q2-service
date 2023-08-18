@@ -9,3 +9,5 @@ export const ERR_MESSAGES = {
 };
 
 export const PARSE_UUID_PIPE_OPTIONS: ParseUUIDPipeOptions = { version: '4' };
+
+export const LOG_LEVELS = ['error', 'warn', 'log', 'debug', 'verbose'] as const;

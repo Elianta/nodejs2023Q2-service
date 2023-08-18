@@ -22,6 +22,8 @@
     POSTGRES_DB=db
     POSTGRES_PORT=5432
     DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public" // db connection url for prisma
+    <!-- logger setup -->
+    LOG_LEVEL=2 // [0-4] Logs with configured level to be registered as well as other higher priority levels.
 
 \*[bcrypt hash generation](https://github.com/kelektiv/node.bcrypt.js#usage)
 

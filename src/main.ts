@@ -7,8 +7,10 @@ import * as yaml from 'js-yaml';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { LoggerService } from './logger/logger.service';
+import { LOG_LEVELS } from './constants';
 
 const PORT = process.env.PORT || 4000;
+const LOG_LEVEL = parseInt(process.env.LOG_LEVEL ?? '2', 10);
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -17,6 +19,7 @@ async function bootstrap() {
 
   const logger = new LoggerService();
   app.useLogger(logger);
+  app.useLogger(LOG_LEVELS.slice(0, LOG_LEVEL + 1));
 
   app.useGlobalPipes(
     new ValidationPipe({
