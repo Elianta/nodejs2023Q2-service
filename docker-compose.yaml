@@ -17,6 +17,7 @@ services:
     volumes:
       - .:/app:cached
       - /app/node_modules
+      - app-logs:/app/logs
     networks:
       - app-backend
     command: npm run start:dev
@@ -37,6 +38,7 @@ services:
     networks:
       - app-backend
 volumes:
+  app-logs:
   db-data:
   db-logs:
 networks:
