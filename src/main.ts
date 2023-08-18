@@ -24,6 +24,10 @@ async function bootstrap() {
     }),
   );
 
+  process.on('uncaughtException', (err) => {
+    logger.error(`Uncaught Exception: ${err.message} ${err.stack}`);
+  });
+
   const document = yaml.load(
     (await readFile(join(process.cwd(), 'doc/api.yaml'))).toString('utf-8'),
   ) as OpenAPIObject;
