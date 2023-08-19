@@ -46,6 +46,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       `${method} ${originalUrl} | query: ${JSON.stringify(
         query,
       )} | body: ${JSON.stringify(body)} | httpStatus: ${httpStatus} `,
+      AllExceptionsFilter.name,
     );
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
