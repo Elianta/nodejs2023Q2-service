@@ -4,6 +4,7 @@ import { writeFile } from 'fs/promises';
 @Injectable({ scope: Scope.TRANSIENT })
 export class LoggerService extends ConsoleLogger {
   private static LOG_FILE_PATH = 'logs/log.txt';
+  private static ERROR_LOG_FILE_PATH = 'logs/error.log.txt';
 
   error(message: string, stackOrContext?: string) {
     super.error(message, stackOrContext);
@@ -13,7 +14,7 @@ export class LoggerService extends ConsoleLogger {
       message,
       stackOrContext,
     );
-    this.writeToFile(formattedMessage);
+    this.writeToFile(formattedMessage, LoggerService.ERROR_LOG_FILE_PATH);
   }
 
   warn(message: string, context?: string) {
@@ -44,8 +45,13 @@ export class LoggerService extends ConsoleLogger {
     this.writeToFile(formattedMessage);
   }
 
-  private writeToFile(formattedMessage: string) {
+  private writeToFile(formattedMessage: string, extraFilePath?: string) {
     writeFile(LoggerService.LOG_FILE_PATH, formattedMessage, { flag: 'a' });
+
+    extraFilePath &&
+      writeFile(extraFilePath, formattedMessage, {
+        flag: 'a',
+      });
   }
 
   private formatLogMessage(
