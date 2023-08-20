@@ -10,6 +10,7 @@ import { LoggerModule } from './logger/logger.module';
 import { LoggerMiddleware } from './middleware';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './filters';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AllExceptionsFilter } from './filters';
     FavoritesModule,
     PrismaModule,
     LoggerModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [
