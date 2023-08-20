@@ -11,6 +11,8 @@ import { LoggerMiddleware } from './middleware';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './filters';
 import { AuthModule } from './auth/auth.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -23,8 +25,9 @@ import { AuthModule } from './auth/auth.module';
     LoggerModule,
     AuthModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [
+    AppService,
     LoggerService,
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
   ],

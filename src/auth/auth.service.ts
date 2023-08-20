@@ -9,13 +9,13 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UserService,
+    private userService: UserService,
     private jwtService: JwtService,
   ) {}
 
   async signUp(createUserDto: CreateUserDto) {
     try {
-      await this.usersService.create(createUserDto);
+      await this.userService.create(createUserDto);
     } catch (error) {
       handleUniqueConstraintFailed(error, ERR_MESSAGES.USER_EXISTS);
       throw error;
@@ -23,7 +23,7 @@ export class AuthService {
   }
 
   async login(authDto: AuthDto) {
-    const user = await this.usersService.verifyCredentials(authDto);
+    const user = await this.userService.verifyCredentials(authDto);
     const payload = { userId: user.id, login: user.login };
     return {
       accessToken: await this.jwtService.signAsync(payload),
