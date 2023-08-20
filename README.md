@@ -24,6 +24,9 @@
     DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public" // db connection url for prisma
     <!-- logger setup -->
     LOG_LEVEL=2 // [0-4] Logs with configured level to be registered as well as other higher priority levels.
+    <!-- auth -->
+    JWT_SECRET_KEY=secret123123 // access token secret key
+    TOKEN_EXPIRE_TIME=1h        // access token expire time
 
 \*[bcrypt hash generation](https://github.com/kelektiv/node.bcrypt.js#usage)
 
