@@ -25,8 +25,10 @@
     <!-- logger setup -->
     LOG_LEVEL=2 // [0-4] Logs with configured level to be registered as well as other higher priority levels.
     <!-- auth -->
-    JWT_SECRET_KEY=secret123123 // access token secret key
-    TOKEN_EXPIRE_TIME=1h        // access token expire time
+    JWT_SECRET_KEY=secret123123         // access token secret key
+    TOKEN_EXPIRE_TIME=1h                // access token expire time
+    JWT_SECRET_REFRESH_KEY=secret123123 // refresh token secret key
+    TOKEN_REFRESH_EXPIRE_TIME=24h       // refresh token expire time
 
 \*[bcrypt hash generation](https://github.com/kelektiv/node.bcrypt.js#usage)
 
