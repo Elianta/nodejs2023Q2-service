@@ -20,7 +20,7 @@ export class AuthService {
 
   async signUp(createUserDto: CreateUserDto) {
     try {
-      await this.userService.create(createUserDto);
+      return await this.userService.create(createUserDto);
     } catch (error) {
       handleUniqueConstraintFailed(error, ERR_MESSAGES.USER_EXISTS);
       throw error;
