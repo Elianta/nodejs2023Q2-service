@@ -1,66 +1,61 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DbService } from 'src/db/db.service';
 import { ERR_MESSAGES } from 'src/constants';
 import { CreateArtistDto, UpdateArtistDto } from './dto';
-import { FavoritesType } from 'src/types';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ArtistEntity } from './entity/artist.entity';
+import { plainToInstance } from 'class-transformer';
+import { handleNotFoundError } from 'src/utils';
 
 @Injectable()
 export class ArtistService {
-  constructor(private db: DbService) {}
+  constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return this.db.getAllArtists();
+  async findAll() {
+    return plainToInstance(ArtistEntity, await this.prisma.artist.findMany());
   }
 
-  findMany(ids: string[]) {
-    return this.db.getManyArtists(ids);
-  }
-
-  findOne(id: string) {
-    const artist = this.db.getOneArtist(id);
+  async findOne(id: string) {
+    const artist = await this.prisma.artist.findUnique({
+      where: { id },
+    });
     if (artist === null) {
       throw new NotFoundException(ERR_MESSAGES.ARTIST_NOT_FOUND);
     }
 
-    return artist;
+    return plainToInstance(ArtistEntity, artist);
   }
 
-  create(dto: CreateArtistDto) {
-    const artist = this.db.createArtist({
+  async create(dto: CreateArtistDto) {
+    const artist = await this.prisma.artist.create({
       data: {
         name: dto.name,
         grammy: dto.grammy,
       },
     });
 
-    return artist;
+    return plainToInstance(ArtistEntity, artist);
   }
 
-  update(id: string, dto: UpdateArtistDto) {
-    const updatedArtist = this.db.updateArtist({
-      data: {
-        id,
-        artistData: dto,
-      },
-    });
-    if (updatedArtist === null) {
-      throw new NotFoundException(ERR_MESSAGES.ARTIST_NOT_FOUND);
-    }
-
-    return updatedArtist;
-  }
-
-  deleteOne(id: string) {
-    const deletedId = this.db.deleteOneArtist(id);
-    if (deletedId === null) {
-      throw new NotFoundException(ERR_MESSAGES.ARTIST_NOT_FOUND);
-    }
-
-    this.db.deleteArtistIdFromTracks(id);
-    this.db.deleteArtistIdFromAlbums(id);
-
+  async update(id: string, dto: UpdateArtistDto) {
     try {
-      this.db.deleteFromFavorites(FavoritesType.ARTIST, id);
-    } catch {}
+      const updatedArtist = await this.prisma.artist.update({
+        where: { id },
+        data: dto,
+      });
+      return plainToInstance(ArtistEntity, updatedArtist);
+    } catch (error) {
+      handleNotFoundError(error, ERR_MESSAGES.ARTIST_NOT_FOUND);
+      throw error;
+    }
+  }
+
+  async deleteOne(id: string) {
+    try {
+      const deletedArtist = await this.prisma.artist.delete({ where: { id } });
+      return deletedArtist.id;
+    } catch (error) {
+      handleNotFoundError(error, ERR_MESSAGES.ARTIST_NOT_FOUND);
+      throw error;
+    }
   }
 }

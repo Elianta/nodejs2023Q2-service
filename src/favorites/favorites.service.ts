@@ -1,92 +1,115 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
-import { AlbumService } from 'src/album/album.service';
-import { ArtistService } from 'src/artist/artist.service';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { ERR_MESSAGES } from 'src/constants';
-import { DbService } from 'src/db/db.service';
-import { TrackService } from 'src/track/track.service';
-import { FavoritesResponse, FavoritesType } from 'src/types';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TrackEntity } from 'src/track/entity/track.entity';
+import { AlbumEntity } from 'src/album/entity/album.entity';
+import { ArtistEntity } from 'src/artist/entity/artist.entity';
+import { plainToInstance } from 'class-transformer';
+import { handleNotFoundError } from 'src/utils';
 
 @Injectable()
 export class FavoritesService {
-  constructor(
-    private db: DbService,
-    private trackService: TrackService,
-    private albumService: AlbumService,
-    private artistService: ArtistService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  findAll(): FavoritesResponse {
-    const favorites = this.db.getAllFavorites();
-    const trackIds = favorites.tracks;
-    const albumIds = favorites.albums;
-    const artistIds = favorites.artists;
-
-    const tracks = this.trackService.findMany(trackIds);
-    const albums = this.albumService.findMany(albumIds);
-    const artists = this.artistService.findMany(artistIds);
+  async findAll() {
+    const tracks = await this.prisma.track.findMany({
+      where: { inFavorites: true },
+    });
+    const artists = await this.prisma.artist.findMany({
+      where: { inFavorites: true },
+    });
+    const albums = await this.prisma.album.findMany({
+      where: { inFavorites: true },
+    });
 
     return {
-      tracks,
-      albums,
-      artists,
+      tracks: plainToInstance(TrackEntity, tracks),
+      albums: plainToInstance(AlbumEntity, albums),
+      artists: plainToInstance(ArtistEntity, artists),
     };
   }
 
-  addTrack(id: string) {
+  async addTrack(id: string) {
     try {
-      this.trackService.findOne(id);
-    } catch {
-      throw new UnprocessableEntityException(ERR_MESSAGES.TRACK_NOT_FOUND);
-    }
-
-    this.db.addToFavorites(FavoritesType.TRACK, id);
-  }
-
-  deleteTrack(id: string) {
-    try {
-      this.db.deleteFromFavorites(FavoritesType.TRACK, id);
+      await this.prisma.track.update({
+        where: { id },
+        data: { inFavorites: true },
+      });
     } catch (error) {
-      throw new NotFoundException(error.message);
+      handleNotFoundError(
+        error,
+        ERR_MESSAGES.TRACK_NOT_FOUND,
+        UnprocessableEntityException,
+      );
+      throw error;
     }
   }
 
-  addAlbum(id: string) {
+  async deleteTrack(id: string) {
     try {
-      this.albumService.findOne(id);
-    } catch {
-      throw new UnprocessableEntityException(ERR_MESSAGES.ALBUM_NOT_FOUND);
-    }
-
-    this.db.addToFavorites(FavoritesType.ALBUM, id);
-  }
-
-  deleteAlbum(id: string) {
-    try {
-      this.db.deleteFromFavorites(FavoritesType.ALBUM, id);
+      await this.prisma.track.update({
+        where: { id },
+        data: { inFavorites: false },
+      });
     } catch (error) {
-      throw new NotFoundException(error.message);
+      handleNotFoundError(error, ERR_MESSAGES.TRACK_NOT_FOUND);
+      throw error;
     }
   }
 
-  addArtist(id: string) {
+  async addAlbum(id: string) {
     try {
-      this.artistService.findOne(id);
-    } catch {
-      throw new UnprocessableEntityException(ERR_MESSAGES.ARTIST_NOT_FOUND);
-    }
-
-    this.db.addToFavorites(FavoritesType.ARTIST, id);
-  }
-
-  deleteArtist(id: string) {
-    try {
-      this.db.deleteFromFavorites(FavoritesType.ARTIST, id);
+      await this.prisma.album.update({
+        where: { id },
+        data: { inFavorites: true },
+      });
     } catch (error) {
-      throw new NotFoundException(error.message);
+      handleNotFoundError(
+        error,
+        ERR_MESSAGES.ALBUM_NOT_FOUND,
+        UnprocessableEntityException,
+      );
+      throw error;
+    }
+  }
+
+  async deleteAlbum(id: string) {
+    try {
+      await this.prisma.album.update({
+        where: { id },
+        data: { inFavorites: false },
+      });
+    } catch (error) {
+      handleNotFoundError(error, ERR_MESSAGES.ALBUM_NOT_FOUND);
+      throw error;
+    }
+  }
+
+  async addArtist(id: string) {
+    try {
+      await this.prisma.artist.update({
+        where: { id },
+        data: { inFavorites: true },
+      });
+    } catch (error) {
+      handleNotFoundError(
+        error,
+        ERR_MESSAGES.ARTIST_NOT_FOUND,
+        UnprocessableEntityException,
+      );
+      throw error;
+    }
+  }
+
+  async deleteArtist(id: string) {
+    try {
+      await this.prisma.artist.update({
+        where: { id },
+        data: { inFavorites: false },
+      });
+    } catch (error) {
+      handleNotFoundError(error, ERR_MESSAGES.ARTIST_NOT_FOUND);
+      throw error;
     }
   }
 }

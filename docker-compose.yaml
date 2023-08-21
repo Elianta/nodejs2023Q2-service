@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+  app:
+    build:
+      context: .
+      target: dev
+      dockerfile: ./build/app/Dockerfile
+    restart: always
+    environment:
+      - PORT=${PORT}
+      - CRYPT_SALT=${CRYPT_SALT}
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - db
+    volumes:
+      - .:/app:cached
+      - /app/node_modules
+      - app-logs:/app/logs
+    networks:
+      - app-backend
+    command: npm run start:dev
+  db:
+    build:
+      context: .
+      dockerfile: ./build/db/Dockerfile
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - db-logs:/var/log/postgresql
+    networks:
+      - app-backend
+volumes:
+  app-logs:
+  db-data:
+  db-logs:
+networks:
+  app-backend:

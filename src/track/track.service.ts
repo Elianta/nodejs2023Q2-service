@@ -1,32 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DbService } from 'src/db/db.service';
 import { ERR_MESSAGES } from 'src/constants';
 import { CreateTrackDto, UpdateTrackDto } from './dto';
-import { FavoritesType } from 'src/types';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TrackEntity } from './entity/track.entity';
+import { plainToInstance } from 'class-transformer';
+import { handleNotFoundError } from 'src/utils';
 
 @Injectable()
 export class TrackService {
-  constructor(private db: DbService) {}
+  constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return this.db.getAllTracks();
+  async findAll() {
+    return plainToInstance(TrackEntity, await this.prisma.track.findMany());
   }
 
-  findMany(ids: string[]) {
-    return this.db.getManyTracks(ids);
-  }
-
-  findOne(id: string) {
-    const track = this.db.getOneTrack(id);
+  async findOne(id: string) {
+    const track = await this.prisma.track.findUnique({
+      where: { id },
+    });
     if (track === null) {
       throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
     }
 
-    return track;
+    return plainToInstance(TrackEntity, track);
   }
 
-  create(dto: CreateTrackDto) {
-    const track = this.db.createTrack({
+  async create(dto: CreateTrackDto) {
+    const track = await this.prisma.track.create({
       data: {
         name: dto.name,
         duration: dto.duration,
@@ -35,31 +35,29 @@ export class TrackService {
       },
     });
 
-    return track;
+    return plainToInstance(TrackEntity, track);
   }
 
-  update(id: string, dto: UpdateTrackDto) {
-    const updatedTrack = this.db.updateTrack({
-      data: {
-        id,
-        trackData: dto,
-      },
-    });
-    if (updatedTrack === null) {
-      throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
-    }
-
-    return updatedTrack;
-  }
-
-  deleteOne(id: string) {
-    const deletedId = this.db.deleteOneTrack(id);
-    if (deletedId === null) {
-      throw new NotFoundException(ERR_MESSAGES.TRACK_NOT_FOUND);
-    }
-
+  async update(id: string, dto: UpdateTrackDto) {
     try {
-      this.db.deleteFromFavorites(FavoritesType.TRACK, id);
-    } catch {}
+      const updatedTrack = await this.prisma.track.update({
+        where: { id },
+        data: dto,
+      });
+      return plainToInstance(TrackEntity, updatedTrack);
+    } catch (error) {
+      handleNotFoundError(error, ERR_MESSAGES.TRACK_NOT_FOUND);
+      throw error;
+    }
+  }
+
+  async deleteOne(id: string) {
+    try {
+      const deletedTrack = await this.prisma.track.delete({ where: { id } });
+      return deletedTrack.id;
+    } catch (error) {
+      handleNotFoundError(error, ERR_MESSAGES.TRACK_NOT_FOUND);
+      throw error;
+    }
   }
 }

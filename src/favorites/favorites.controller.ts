@@ -10,14 +10,13 @@ import {
 } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
 import { PARSE_UUID_PIPE_OPTIONS } from 'src/constants';
-import { FavoritesResponse } from 'src/types';
 
 @Controller('favs')
 export class FavoritesController {
   constructor(private favoritesService: FavoritesService) {}
 
   @Get()
-  findAll(): FavoritesResponse {
+  findAll() {
     return this.favoritesService.findAll();
   }
 

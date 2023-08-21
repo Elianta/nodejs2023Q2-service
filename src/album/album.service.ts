@@ -1,32 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DbService } from 'src/db/db.service';
 import { ERR_MESSAGES } from 'src/constants';
 import { CreateAlbumDto, UpdateAlbumDto } from './dto';
-import { FavoritesType } from 'src/types';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { AlbumEntity } from './entity/album.entity';
+import { plainToInstance } from 'class-transformer';
+import { handleNotFoundError } from 'src/utils';
 
 @Injectable()
 export class AlbumService {
-  constructor(private db: DbService) {}
+  constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return this.db.getAllAlbums();
+  async findAll() {
+    return plainToInstance(AlbumEntity, await this.prisma.album.findMany());
   }
 
-  findMany(ids: string[]) {
-    return this.db.getManyAlbums(ids);
-  }
-
-  findOne(id: string) {
-    const album = this.db.getOneAlbum(id);
+  async findOne(id: string) {
+    const album = await this.prisma.album.findUnique({
+      where: { id },
+    });
     if (album === null) {
       throw new NotFoundException(ERR_MESSAGES.ALBUM_NOT_FOUND);
     }
 
-    return album;
+    return plainToInstance(AlbumEntity, album);
   }
 
-  create(dto: CreateAlbumDto) {
-    const album = this.db.createAlbum({
+  async create(dto: CreateAlbumDto) {
+    const album = await this.prisma.album.create({
       data: {
         name: dto.name,
         year: dto.year,
@@ -34,33 +34,31 @@ export class AlbumService {
       },
     });
 
-    return album;
+    return plainToInstance(AlbumEntity, album);
   }
 
-  update(id: string, dto: UpdateAlbumDto) {
-    const updatedAlbum = this.db.updateAlbum({
-      data: {
-        id,
-        albumData: dto,
-      },
-    });
-    if (updatedAlbum === null) {
-      throw new NotFoundException(ERR_MESSAGES.ALBUM_NOT_FOUND);
-    }
-
-    return updatedAlbum;
-  }
-
-  deleteOne(id: string) {
-    const deletedId = this.db.deleteOneAlbum(id);
-    if (deletedId === null) {
-      throw new NotFoundException(ERR_MESSAGES.ALBUM_NOT_FOUND);
-    }
-
-    this.db.deleteAlbumIdFromTracks(id);
-
+  async update(id: string, dto: UpdateAlbumDto) {
     try {
-      this.db.deleteFromFavorites(FavoritesType.ALBUM, id);
-    } catch {}
+      const updatedAlbum = await this.prisma.album.update({
+        where: { id },
+        data: dto,
+      });
+      return plainToInstance(AlbumEntity, updatedAlbum);
+    } catch (error) {
+      handleNotFoundError(error, ERR_MESSAGES.ALBUM_NOT_FOUND);
+      throw error;
+    }
+  }
+
+  async deleteOne(id: string) {
+    try {
+      const deletedAlbum = await this.prisma.album.delete({
+        where: { id },
+      });
+      return deletedAlbum.id;
+    } catch (error) {
+      handleNotFoundError(error, ERR_MESSAGES.ALBUM_NOT_FOUND);
+      throw error;
+    }
   }
 }
