@@ -22,7 +22,7 @@ export class UserService {
     return plainToInstance(UserEntity, await this.prisma.user.findMany());
   }
 
-  async findById(id: string) {
+  async findById(id: string, plain = true) {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -30,7 +30,7 @@ export class UserService {
       throw new NotFoundException(ERR_MESSAGES.USER_NOT_FOUND);
     }
 
-    return plainToInstance(UserEntity, user);
+    return plain ? plainToInstance(UserEntity, user) : user;
   }
 
   async findByLogin(login: string, plain = true) {
@@ -79,7 +79,7 @@ export class UserService {
   }
 
   async updatePassword(id: string, dto: UpdatePasswordDto) {
-    const user = await this.findById(id);
+    const user = await this.findById(id, false);
 
     const pwMatches = await this.verifyPassword(
       dto.oldPassword,
